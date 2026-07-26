@@ -1,14 +1,18 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MessageCircle, Hash, FileText, ArrowRight, BookOpen, Users, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { fetchPlatformStats, type PlatformStats } from '@/api/statsApi'
 import './Home.scss'
 
-const stats = [
-  { value: '60+', label: 'Q&A Answered' },
-  { value: '6', label: 'Topic Channels' },
-  { value: '3+', label: 'Published Articles' },
-]
+function toStatItems(stats: PlatformStats | null) {
+  return [
+    { value: stats ? `${stats.qnaAnswered}` : '—', label: 'Q&A Answered' },
+    { value: stats ? `${stats.topicChannels}` : '—', label: 'Topic Channels' },
+    { value: stats ? `${stats.publishedArticles}` : '—', label: 'Published Articles' },
+  ]
+}
 
 const features = [
   {
@@ -46,6 +50,12 @@ const trust = [
 export function Home() {
   const { t } = useTranslation()
   const { isAuthenticated } = useAuth()
+  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null)
+  const stats = toStatItems(platformStats)
+
+  useEffect(() => {
+    fetchPlatformStats().then(setPlatformStats).catch(() => {})
+  }, [])
 
   return (
     <div className="home-page">
