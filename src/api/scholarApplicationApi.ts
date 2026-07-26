@@ -8,9 +8,15 @@ export interface ScholarApplication {
   qualifications: string
   ijazah?: string
   status: 'pending' | 'approved' | 'rejected'
+  reviewerNote: string | null
   reviewedAt: string | null
   createdAt: string
   updatedAt: string
+  applicant?: {
+    id: string
+    name: string
+    email: string
+  }
 }
 
 export async function applyForScholar(credentials: {
@@ -32,5 +38,29 @@ export async function fetchMyScholarApplication(): Promise<ScholarApplication | 
     return null
   }
   const response = await axiosInstance.get<ScholarApplication | null>('/scholar-applications/me')
+  return response.data
+}
+
+export async function fetchAllScholarApplications(
+  status?: 'pending' | 'approved' | 'rejected'
+): Promise<ScholarApplication[]> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 500))
+    return []
+  }
+  const params = status ? { status } : {}
+  const response = await axiosInstance.get<ScholarApplication[]>('/scholar-applications', { params })
+  return response.data
+}
+
+export async function reviewScholarApplication(
+  id: string,
+  status: 'approved' | 'rejected',
+  reviewerNote?: string
+): Promise<ScholarApplication> {
+  const response = await axiosInstance.patch<ScholarApplication>(
+    `/scholar-applications/${id}`,
+    { status, reviewerNote }
+  )
   return response.data
 }

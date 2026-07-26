@@ -89,6 +89,14 @@ export function Header() {
 
           {isAuthenticated ? (
             <>
+              {user?.role === 'admin' && (
+                <Link
+                  to="/admin/scholar-applications"
+                  className={`header-auth-btn header-auth-btn-desktop ${isActive('/admin/scholar-applications') ? 'header-auth-btn-active' : 'header-auth-btn-ghost'}`}
+                >
+                  Applications
+                </Link>
+              )}
               <Link
                 to={user?.role === 'user' ? '/scholar-application' : '#'}
                 className="header-user-btn"
@@ -170,6 +178,12 @@ export function Header() {
               <Link to="/scholar-application" className="mobile-nav-link">
                 <GraduationCap size={16} />
                 <span>Become a Scholar</span>
+              </Link>
+            )}
+            {user?.role === 'admin' && (
+              <Link to="/admin/scholar-applications" className={`mobile-nav-link ${isActive('/admin/scholar-applications') ? 'mobile-nav-link-active' : ''}`}>
+                <GraduationCap size={16} />
+                <span>Scholar Applications</span>
               </Link>
             )}
 
