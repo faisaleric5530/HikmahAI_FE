@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { MessageCircle, FileText, LogOut, User, Menu, X, GraduationCap, Sun, Moon } from 'lucide-react'
+import { MessageCircle, FileText, LogOut, User, Menu, X, GraduationCap, Sun, Moon, MessageSquare } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/store/useUIStore'
+import { useDmStore } from '@/store/useDmStore'
 import { MosqueIcon } from '@/components/Icons/MosqueIcon'
 import { HikmahLogoIcon } from '@/components/Icons/HikmahLogoIcon'
 import './Header.scss'
@@ -47,9 +48,17 @@ export function Header() {
     return () => { document.body.style.overflow = '' }
   }, [isMobileOpen])
 
+  const totalUnread = useDmStore((s) => s.totalUnread)
+
   const navItems = [
     { to: '/chat', icon: <MessageCircle size={16} />, label: t('nav.chat') },
     { to: '/channels', icon: <MosqueIcon size={16} />, label: t('nav.channels') },
+    {
+      to: '/messages',
+      icon: <MessageSquare size={16} />,
+      label: 'Messages',
+      badge: totalUnread > 0 ? totalUnread : undefined,
+    },
     { to: '/blogs', icon: <FileText size={16} />, label: t('nav.blogs') },
   ]
 
@@ -65,7 +74,7 @@ export function Header() {
 
         {isAuthenticated && (
           <div className="header-nav">
-            {navItems.map(({ to, icon, label }) => (
+            {navItems.map(({ to, icon, label, badge }) => (
               <Link
                 key={to}
                 to={to}
@@ -73,6 +82,9 @@ export function Header() {
               >
                 {icon}
                 <span>{label}</span>
+                {badge !== undefined && (
+                  <span className="nav-link-badge">{badge}</span>
+                )}
               </Link>
             ))}
           </div>
@@ -163,7 +175,7 @@ export function Header() {
 
             <div className="mobile-nav-divider" />
 
-            {navItems.map(({ to, icon, label }) => (
+            {navItems.map(({ to, icon, label, badge }) => (
               <Link
                 key={to}
                 to={to}
@@ -171,6 +183,9 @@ export function Header() {
               >
                 {icon}
                 <span>{label}</span>
+                {badge !== undefined && (
+                  <span className="nav-link-badge">{badge}</span>
+                )}
               </Link>
             ))}
 

@@ -40,11 +40,8 @@ export async function fetchQuestions(channelId: string): Promise<Question[]> {
     await new Promise((r) => setTimeout(r, 500))
     return getMockQuestions(channelId)
   }
-  const response = await axiosInstance.get<QuestionListItem[]>(`/channels/${channelId}/questions`)
-  const details = await Promise.all(
-    response.data.map((q) => axiosInstance.get<QuestionDetail>(`/questions/${q.id}`))
-  )
-  return details.map((d) => toQuestion(d.data))
+  const response = await axiosInstance.get<QuestionDetail[]>(`/channels/${channelId}/questions`)
+  return response.data.map(toQuestion)
 }
 
 export async function postQuestion(
@@ -80,6 +77,7 @@ export async function postReply(questionId: string, body: string): Promise<Reply
       questionId,
       body,
       authorName: 'You',
+      authorPublicId: undefined,
       authorRole: 'user',
       isVerifiedAnswer: false,
       createdAt: new Date().toISOString(),
@@ -87,4 +85,12 @@ export async function postReply(questionId: string, body: string): Promise<Reply
   }
   const response = await axiosInstance.post<Reply>(`/questions/${questionId}/replies`, { body })
   return response.data
+}
+
+export async function markReplyVerified(replyId: string): Promise<void> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 300))
+    return
+  }
+  await axiosInstance.patch(`/replies/${replyId}/verify`)
 }

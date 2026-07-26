@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import { useChannelStore } from '@/store/useChannelStore'
-import { fetchChannels, fetchQuestions, postQuestion } from '@/api/channelsApi'
+import { fetchChannels, fetchQuestions, postQuestion, postReply, markReplyVerified } from '@/api/channelsApi'
 
 export function useChannels() {
   const store = useChannelStore()
@@ -31,10 +31,22 @@ export function useChannelDetail(channelId: string) {
     await loadQuestions()
   }
 
+  const submitReply = async (questionId: string, body: string) => {
+    await postReply(questionId, body)
+    await loadQuestions()
+  }
+
+  const verifyReply = async (replyId: string) => {
+    await markReplyVerified(replyId)
+    await loadQuestions()
+  }
+
   return {
     questions: store.questions,
     isLoading: store.isLoading,
     loadQuestions,
     submitQuestion,
+    submitReply,
+    verifyReply,
   }
 }

@@ -19,6 +19,8 @@ import { ScholarApplication } from '@/pages/ScholarApplication/ScholarApplicatio
 import { Profile } from '@/pages/Profile/Profile'
 import { AdminScholarApplications } from '@/pages/Admin/ScholarApplications/AdminScholarApplications'
 import { AdminGuard } from '@/components/AdminGuard'
+import { MessagesLayout } from '@/pages/Messages/MessagesLayout'
+import { MessageDetail } from '@/pages/Messages/MessageDetail/MessageDetail'
 import { useSessionIntegrity } from '@/hooks/useSessionIntegrity'
 import { useUIStore } from '@/store/useUIStore'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -49,7 +51,9 @@ function AppContent() {
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized)
   }, [logout, navigate])
   const isFullHeight =
-    location.pathname === '/chat' || location.pathname.startsWith('/channels')
+    location.pathname === '/chat' ||
+    location.pathname.startsWith('/channels') ||
+    location.pathname.startsWith('/messages')
   const isAuthPage =
     location.pathname === '/sign-in' || location.pathname === '/sign-up'
 
@@ -87,6 +91,10 @@ function AppContent() {
           <Route path="/blogs" element={<RequireAuth><BlogList /></RequireAuth>} />
           <Route path="/blogs/new" element={<RequireAuth><BlogEditor /></RequireAuth>} />
           <Route path="/blogs/:id" element={<RequireAuth><BlogDetail /></RequireAuth>} />
+          <Route path="/messages" element={<RequireAuth><MessagesLayout /></RequireAuth>}>
+            <Route path=":conversationId" element={<MessageDetail />} />
+          </Route>
+
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/scholar-application" element={<RequireAuth><ScholarApplication /></RequireAuth>} />
           <Route

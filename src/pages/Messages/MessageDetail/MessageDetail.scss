@@ -1,0 +1,278 @@
+.message-detail-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+.message-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.message-detail-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+
+  @media (min-width: 860px) { display: none; }
+
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+}
+
+.message-detail-head-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.message-detail-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2D6A4F, #1B4332);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.message-detail-name {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.message-detail-role {
+  font-family: "Inter", sans-serif;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  text-transform: capitalize;
+}
+
+// ─── Body / messages ──────────────────────────────────────────────────────────
+.message-detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-detail-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  p {
+    font-family: "Poppins", sans-serif;
+    font-size: 0.9375rem;
+    color: var(--color-text-placeholder);
+    font-style: italic;
+  }
+}
+
+.dm-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dm-bubble-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+
+  &.is-own { flex-direction: row-reverse; }
+}
+
+.dm-bubble-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2D6A4F, #1B4332);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.dm-bubble {
+  max-width: 72%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &-own {
+    background: var(--color-primary);
+    border-bottom-right-radius: 4px;
+
+    .dm-bubble-text { color: #FFFFFF; }
+    .dm-bubble-time { color: rgba(255, 255, 255, 0.7); text-align: right; }
+  }
+
+  &-other {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-bottom-left-radius: 4px;
+
+    .dm-bubble-text { color: var(--color-text-primary); }
+    .dm-bubble-time { color: var(--color-text-placeholder); }
+  }
+
+  &-sending {
+    padding: 0.875rem 1rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.3rem;
+  }
+}
+
+.dm-bubble-text {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0;
+  word-break: break-word;
+}
+
+.dm-bubble-time {
+  font-family: "Inter", sans-serif;
+  font-size: 0.6875rem;
+  align-self: flex-end;
+}
+
+@keyframes dm-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}
+
+.dm-typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  animation: dm-bounce 1.2s ease-in-out infinite;
+
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
+}
+
+// ─── Input area ───────────────────────────────────────────────────────────────
+.message-detail-input-area {
+  flex-shrink: 0;
+  padding: 0.75rem 1rem 0.5rem;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.message-detail-input-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.625rem;
+}
+
+.message-detail-input {
+  flex: 1;
+  padding: 0.6875rem 1rem;
+  background: var(--color-input-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: 24px;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  resize: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  line-height: 1.5;
+  max-height: 120px;
+  overflow-y: auto;
+
+  &::placeholder { color: var(--color-text-placeholder); }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.12);
+  }
+}
+
+.message-detail-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  }
+
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+@keyframes message-spin {
+  to { transform: rotate(360deg); }
+}
+
+.message-detail-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: message-spin 0.7s linear infinite;
+}
+
+.message-detail-input-hint {
+  font-family: "Inter", sans-serif;
+  font-size: 0.6875rem;
+  color: var(--color-text-placeholder);
+  margin: 0.375rem 0 0;
+  padding: 0 0.25rem;
+}

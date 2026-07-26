@@ -16,6 +16,7 @@ export interface Question {
   title: string
   body: string
   authorName: string
+  authorPublicId?: string
   createdAt: string
   isVerifiedAnswer: boolean
   madhabTag?: string
@@ -27,6 +28,7 @@ export interface Reply {
   questionId: string
   body: string
   authorName: string
+  authorPublicId?: string
   authorRole: 'user' | 'scholar'
   isVerifiedAnswer: boolean
   madhabTag?: string

@@ -20,7 +20,7 @@ function getJoinedIds(): string[] {
 export function ChannelDetail() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
-  const { questions, isLoading, loadQuestions, submitQuestion } = useChannelDetail(id!)
+  const { questions, isLoading, loadQuestions, submitQuestion, submitReply, verifyReply } = useChannelDetail(id!)
   const channels = useChannelStore((s) => s.channels)
   const channel = channels.find((c) => c.id === id)
 
@@ -162,7 +162,7 @@ export function ChannelDetail() {
         ) : (
           <div className="questions-list">
             {questions.map((q) => (
-              <QuestionThread key={q.id} question={q} />
+              <QuestionThread key={q.id} question={q} onReply={submitReply} onVerify={verifyReply} />
             ))}
           </div>
         )}
