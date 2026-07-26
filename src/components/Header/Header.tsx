@@ -98,7 +98,7 @@ export function Header() {
                 </Link>
               )}
               <Link
-                to={user?.role === 'user' ? '/scholar-application' : '#'}
+                to="/profile"
                 className="header-user-btn"
               >
                 <div className="header-avatar">{user?.name?.[0]?.toUpperCase()}</div>
@@ -174,12 +174,10 @@ export function Header() {
               </Link>
             ))}
 
-            {user?.role === 'user' && (
-              <Link to="/scholar-application" className="mobile-nav-link">
-                <GraduationCap size={16} />
-                <span>Become a Scholar</span>
-              </Link>
-            )}
+            <Link to="/profile" className={`mobile-nav-link ${isActive('/profile') ? 'mobile-nav-link-active' : ''}`}>
+              <User size={16} />
+              <span>Profile</span>
+            </Link>
             {user?.role === 'admin' && (
               <Link to="/admin/scholar-applications" className={`mobile-nav-link ${isActive('/admin/scholar-applications') ? 'mobile-nav-link-active' : ''}`}>
                 <GraduationCap size={16} />

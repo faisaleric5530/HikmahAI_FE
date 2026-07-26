@@ -5,7 +5,7 @@ const USE_MOCK = !import.meta.env.VITE_API_BASE_URL
 
 interface AuthResponse {
   token: string
-  user: { id: string; name: string; email: string; role: AuthUser['role']; preferredLanguage?: string }
+  user: { id: string; name: string; email: string; role: AuthUser['role']; hashIdentity?: boolean; preferredLanguage?: string }
 }
 
 function toAuthUser(res: AuthResponse): AuthUser {
@@ -14,6 +14,7 @@ function toAuthUser(res: AuthResponse): AuthUser {
     name: res.user.name,
     email: res.user.email,
     role: res.user.role,
+    hashIdentity: res.user.hashIdentity ?? false,
     accessToken: res.token,
   }
 }
@@ -25,7 +26,7 @@ export async function fetchCurrentUser(): Promise<AuthUser | null> {
   }
   try {
     const response = await axiosInstance.get<AuthResponse['user']>('/auth/profile')
-    return { ...response.data, accessToken: undefined }
+    return { ...response.data, hashIdentity: response.data.hashIdentity ?? false, accessToken: undefined }
   } catch {
     return null
   }

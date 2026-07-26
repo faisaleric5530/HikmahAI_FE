@@ -16,6 +16,7 @@ import { BlogList } from '@/pages/Blogs/BlogList/BlogList'
 import { BlogDetail } from '@/pages/Blogs/BlogDetail/BlogDetail'
 import { BlogEditor } from '@/pages/Blogs/BlogEditor/BlogEditor'
 import { ScholarApplication } from '@/pages/ScholarApplication/ScholarApplication'
+import { Profile } from '@/pages/Profile/Profile'
 import { AdminScholarApplications } from '@/pages/Admin/ScholarApplications/AdminScholarApplications'
 import { AdminGuard } from '@/components/AdminGuard'
 import { useSessionIntegrity } from '@/hooks/useSessionIntegrity'
@@ -86,6 +87,7 @@ function AppContent() {
           <Route path="/blogs" element={<RequireAuth><BlogList /></RequireAuth>} />
           <Route path="/blogs/new" element={<RequireAuth><BlogEditor /></RequireAuth>} />
           <Route path="/blogs/:id" element={<RequireAuth><BlogDetail /></RequireAuth>} />
+          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/scholar-application" element={<RequireAuth><ScholarApplication /></RequireAuth>} />
           <Route
             path="/admin/scholar-applications"
