@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2D6A4F;
+  --color-primary-dark: #1B4332;
+  --color-primary-light: #D8F3DC;
+  --color-accent: #D4A373;
+  --color-accent-dark: #BC8A5F;
+  --color-accent-light: #FAF0E6;
+  --color-bg: #FAF8F5;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #2D2A24;
+  --color-text-secondary: #7C756B;
+  --color-text-tertiary: #B8B0A5;
+  --color-border: #E8E3DD;
+  --color-border-hover: #D4CFC8;
+  --color-border-subtle: #F0EDE8;
+  --color-danger: #C44545;
+  --color-success: #4A7C59;
+  --color-warning: #C9953C;
+  --color-info: #4A7FB5;
+
+  --channel-aqeedah: #4A7FB5;
+  --channel-fiqh: #2D6A4F;
+  --channel-tafsir: #BC8A5F;
+  --channel-hadith: #7B5EA7;
+  --channel-seerah: #C9953C;
+  --channel-spirituality: #4A9BA5;
+
+  --font-heading: "Montserrat", sans-serif;
+  --font-body: "Poppins", sans-serif;
+  --font-form: "Inter", sans-serif;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-primary: 0 4px 16px rgba(45, 106, 79, 0.25);
+}
+
+/* ─── Additional semantic tokens (light defaults) ─── */
+:root {
+  --color-text-muted: #5A534B;
+  --color-text-placeholder: #C4BBAF;
+  --color-surface-hover: #F5F2ED;
+  --color-primary-xlight: #F0FAF3;
+  --color-header-bg: rgba(250, 248, 245, 0.88);
+  --color-shimmer-base: #F0EDE8;
+  --color-shimmer-highlight: #E8E3DD;
+  --color-input-bg: #F5F2EE;
+  --color-input-bg-focus: #F9F7F4;
+
+  /* Channel card bg tokens */
+  --channel-green-bg: #D8F3DC;
+  --channel-green-count-bg: #F0FAF3;
+  --channel-blue-bg: #E8F0F9;
+  --channel-blue-count-bg: #EEF4FB;
+  --channel-amber-bg: #FAF0E6;
+  --channel-amber-count-bg: #FDF5EE;
+  --channel-purple-bg: #F0EBF9;
+  --channel-purple-count-bg: #F5F1FB;
+  --channel-orange-bg: #FEF6E8;
+  --channel-orange-count-bg: #FEF9F0;
+  --channel-teal-bg: #E6F4F6;
+  --channel-teal-count-bg: #EEF7F9;
+}
+
+/* ─── Dark mode overrides ─── */
+html.dark {
+  color-scheme: dark;
+
+  /* Core palette */
+  --color-bg: #0F1812;
+  --color-surface: #162018;
+  --color-text-primary: #F0EDE8;
+  --color-text-secondary: #9A9290;
+  --color-text-tertiary: #6B6460;
+  --color-border: #253B2C;
+  --color-border-hover: #32503C;
+  --color-border-subtle: #1A2C20;
+  --color-primary: #52B788;
+  --color-primary-dark: #74C69D;
+  --color-primary-light: #1A3526;
+  --color-accent: #D4A373;
+  --color-accent-dark: #E6C49A;
+  --color-accent-light: #2A1F10;
+  --color-danger: #E07070;
+  --color-success: #52B788;
+  --color-warning: #E8A84C;
+  --color-info: #5B9ED6;
+
+  /* Semantic overrides */
+  --color-text-muted: #7A7470;
+  --color-text-placeholder: #4A4540;
+  --color-surface-hover: #1E2E24;
+  --color-primary-xlight: #0E2018;
+  --color-header-bg: rgba(15, 24, 18, 0.92);
+  --color-shimmer-base: #1E2E22;
+  --color-shimmer-highlight: #243B28;
+  --color-input-bg: #1C2E22;
+  --color-input-bg-focus: #203426;
+
+  /* Channel card bg tokens */
+  --channel-green-bg: #1A3526;
+  --channel-green-count-bg: #0E2018;
+  --channel-blue-bg: #172030;
+  --channel-blue-count-bg: #131E2A;
+  --channel-amber-bg: #2A1E10;
+  --channel-amber-count-bg: #221808;
+  --channel-purple-bg: #1E1530;
+  --channel-purple-count-bg: #181028;
+  --channel-orange-bg: #2A1E08;
+  --channel-orange-count-bg: #221806;
+  --channel-teal-bg: #0E2224;
+  --channel-teal-count-bg: #0A1C1E;
+}

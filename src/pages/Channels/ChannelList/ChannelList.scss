@@ -1,0 +1,65 @@
+.channel-list-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 5rem;
+
+  @media (min-width: 640px) { padding: 2.5rem 1.5rem 5rem; }
+}
+
+.channel-list-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+// ─── Search bar ───────────────────────────────────────────────────────────────
+.channel-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.channel-search-icon {
+  position: absolute;
+  left: 0.9375rem;
+  color: var(--color-text-placeholder);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.channel-search-input {
+  width: 100%;
+  padding: 0.6875rem 1rem 0.6875rem 2.625rem;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  transition: all 0.18s ease;
+
+  &::placeholder { color: var(--color-text-placeholder); }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.12);
+    background: var(--color-surface);
+  }
+
+  &::-webkit-search-cancel-button { cursor: pointer; }
+}
+
+// ─── Channel list container ───────────────────────────────────────────────────
+.channel-list {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+
+  .channel-row:first-child { border-radius: 14px 14px 0 0; }
+  .channel-row:last-child { border-radius: 0 0 14px 14px; }
+  .channel-row:only-child { border-radius: 14px; }
+}

@@ -1,0 +1,30 @@
+import type { ChatMessage } from '@/store/useChatStore'
+import './ChatBubble.scss'
+
+interface ChatBubbleProps {
+  message: ChatMessage
+}
+
+export function ChatBubble({ message }: ChatBubbleProps) {
+  const isUser = message.role === 'user'
+
+  return (
+    <div className={`chat-bubble-wrapper ${isUser ? 'is-user' : 'is-assistant'}`}>
+      {!isUser && (
+        <div className="chat-bubble-avatar" aria-hidden="true">H</div>
+      )}
+
+      <div className={`chat-bubble ${isUser ? 'user-bubble' : 'assistant-bubble'}`}>
+        <p className="chat-bubble-text">{message.content}</p>
+      </div>
+
+      {isUser && (
+        <div className="chat-bubble-avatar is-user-avatar" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/>
+          </svg>
+        </div>
+      )}
+    </div>
+  )
+}

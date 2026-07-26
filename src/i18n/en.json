@@ -1,0 +1,47 @@
+{
+  "nav": {
+    "chat": "Hikmah AI Chat",
+    "channels": "Hikmah Channels",
+    "blogs": "Blogs",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "profile": "Profile"
+  },
+  "home": {
+    "title": "Hikmah AI",
+    "subtitle": "Islamic Knowledge, Powered by AI",
+    "description": "Explore Islamic scholarship through AI-powered conversations, community channels, and scholarly blogs.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "features": {
+      "chat": "Ask anything about Islam and receive knowledgeable responses",
+      "channels": "Join topic-based channels and ask questions to the community",
+      "blogs": "Read and write insightful Islamic blog posts"
+    }
+  },
+  "chat": {
+    "title": "Hikmah AI Chat",
+    "placeholder": "Ask a question...",
+    "send": "Send",
+    "sending": "Sending...",
+    "welcome": "Ask me anything about Islam, and I'll do my best to help."
+  },
+  "channels": {
+    "title": "Hikmah Channels",
+    "askQuestion": "Ask a Question",
+    "noQuestions": "No questions yet. Be the first to ask!",
+    "verifiedAnswer": "Verified Answer"
+  },
+  "blogs": {
+    "title": "Blogs",
+    "newPost": "New Post",
+    "readMore": "Read More",
+    "noBlogs": "No blogs yet."
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out"
+  }
+}

@@ -1,0 +1,19 @@
+.blog-list-page {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 5rem;
+
+  @media (min-width: 640px) { padding: 2.5rem 1.5rem 5rem; }
+  @media (min-width: 992px) { padding: 2.5rem 2rem 5rem; }
+
+  .blog-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+    margin-top: 1.25rem;
+
+    @media (min-width: 540px) { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 900px) { grid-template-columns: repeat(3, 1fr); }
+    @media (min-width: 1200px) { grid-template-columns: repeat(4, 1fr); }
+  }
+}
