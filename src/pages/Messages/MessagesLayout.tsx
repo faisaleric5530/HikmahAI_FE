@@ -6,14 +6,17 @@ import { startConversation } from '@/api/dmApi'
 import { ListSkeleton } from '@/components/Skeletons/Skeletons'
 import './MessagesLayout.scss'
 
-function formatMsgDate(iso: string) {
-  const diff = Math.max(0, Date.now() - new Date(iso).getTime())
+function formatMsgDate(iso: string | null | undefined) {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (isNaN(date.getTime())) return ''
+  const diff = Math.max(0, Date.now() - date.getTime())
   if (diff < 60000) return 'Just now'
   const mins = Math.floor(diff / 60000)
   if (mins < 60) return `${mins}m ago`
   const hrs = Math.floor(diff / 3600000)
   if (hrs < 24) return `${hrs}h ago`
-  return new Date(iso).toLocaleDateString()
+  return date.toLocaleDateString()
 }
 
 function MessagesEmptyPanel() {

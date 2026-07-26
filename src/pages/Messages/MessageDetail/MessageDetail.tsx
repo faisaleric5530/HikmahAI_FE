@@ -93,9 +93,11 @@ export function MessageDetail() {
                   )}
                   <div className={`dm-bubble ${isOwn ? 'dm-bubble-own' : 'dm-bubble-other'}`}>
                     <p className="dm-bubble-text">{msg.body}</p>
-                    <span className="dm-bubble-time">
-                      {new Date(msg.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                    {msg.createdAt && !isNaN(new Date(msg.createdAt).getTime()) && (
+                      <span className="dm-bubble-time">
+                        {new Date(msg.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
                   </div>
                 </div>
               )

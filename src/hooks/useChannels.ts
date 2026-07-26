@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import { useChannelStore } from '@/store/useChannelStore'
+import { useAuthStore } from '@/store/useAuthStore'
 import { fetchChannels, fetchQuestions, postQuestion, postReply, markReplyVerified } from '@/api/channelsApi'
 
 export function useChannels() {
@@ -23,6 +24,15 @@ export function useChannelDetail(channelId: string) {
   const loadQuestions = useCallback(async () => {
     store.setLoading(true)
     const data = await fetchQuestions(channelId)
+    const me = useAuthStore.getState().user
+    if (me) {
+      data.forEach((q) => {
+        if (q.authorPublicId === me.id) q.authorName = me.name
+        q.replies.forEach((r) => {
+          if (r.authorPublicId === me.id) r.authorName = me.name
+        })
+      })
+    }
     useChannelStore.setState({ questions: data, isLoading: false })
   }, [channelId])
 
