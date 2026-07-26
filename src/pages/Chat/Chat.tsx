@@ -11,12 +11,17 @@ const SUGGESTIONS = [
   'Explain the concept of Tawakkul',
   'What is the significance of Ramadan?',
   'How do I perform Wudu correctly?',
+  'My husband refuses to pay mahr — what are my rights in Islam?',
+  'Is my salary halal if I work in a conventional bank?',
+  'I keep missing Fajr — how do I fix this?',
+  'I have doubts about my faith and don\'t know who to talk to',
 ]
 
 function formatSessionDate(iso: string) {
   const date = new Date(iso)
   const now = new Date()
-  const diff = now.getTime() - date.getTime()
+  const diff = Math.max(0, now.getTime() - date.getTime())
+  if (diff < 60000) return 'Just now'
   const days = Math.floor(diff / 86400000)
   if (days === 0) return 'Today'
   if (days === 1) return 'Yesterday'
