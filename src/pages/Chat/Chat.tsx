@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
 import { Send, Sparkles, Plus, Trash2, PanelLeft, MessageSquare } from 'lucide-react'
 import { useChat } from '@/hooks/useChat'
-import { useChatStore } from '@/store/useChatStore'
 import { ChatBubble } from '@/components/ChatBubble/ChatBubble'
 import './Chat.scss'
 
@@ -26,8 +26,8 @@ function formatSessionDate(iso: string) {
 
 export function Chat() {
   const { t } = useTranslation()
-  const { messages, isSending, sendMessage } = useChat()
-  const { sessions, activeSessionId, newSession, loadSession, deleteSession } = useChatStore()
+  const { messages, isSending, sessions, activeSessionId, sendMessage, newSession, loadSession, deleteSession } =
+    useChat()
   const [input, setInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     window.matchMedia('(min-width: 860px)').matches,
@@ -44,13 +44,22 @@ export function Chat() {
     const text = input.trim()
     if (!text || isSending) return
     setInput('')
-    await sendMessage(text)
-    inputRef.current?.focus()
+    try {
+      await sendMessage(text)
+    } catch {
+      toast.error('Failed to send message. Please try again.')
+    } finally {
+      inputRef.current?.focus()
+    }
   }
 
   const handleSuggestion = async (text: string) => {
     if (isSending) return
-    await sendMessage(text)
+    try {
+      await sendMessage(text)
+    } catch {
+      toast.error('Failed to send message. Please try again.')
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -66,9 +75,21 @@ export function Chat() {
     if (window.matchMedia('(max-width: 859px)').matches) setSidebarOpen(false)
   }
 
-  const handleLoadSession = (id: string) => {
-    loadSession(id)
+  const handleLoadSession = async (id: string) => {
     if (window.matchMedia('(max-width: 859px)').matches) setSidebarOpen(false)
+    try {
+      await loadSession(id)
+    } catch {
+      toast.error('Failed to load chat session.')
+    }
+  }
+
+  const handleDeleteSession = async (id: string) => {
+    try {
+      await deleteSession(id)
+    } catch {
+      toast.error('Failed to delete chat session.')
+    }
   }
 
   return (
@@ -121,7 +142,7 @@ export function Chat() {
                 </button>
                 <button
                   className="chat-session-delete"
-                  onClick={() => deleteSession(session.id)}
+                  onClick={() => handleDeleteSession(session.id)}
                   aria-label={`Delete session`}
                 >
                   <Trash2 size={13} />

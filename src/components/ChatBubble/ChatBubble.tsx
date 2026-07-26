@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom'
+import { UserPlus } from 'lucide-react'
 import type { ChatMessage } from '@/store/useChatStore'
 import './ChatBubble.scss'
 
@@ -6,6 +8,7 @@ interface ChatBubbleProps {
 }
 
 export function ChatBubble({ message }: ChatBubbleProps) {
+  const navigate = useNavigate()
   const isUser = message.role === 'user'
 
   return (
@@ -14,8 +17,35 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         <div className="chat-bubble-avatar" aria-hidden="true">H</div>
       )}
 
-      <div className={`chat-bubble ${isUser ? 'user-bubble' : 'assistant-bubble'}`}>
-        <p className="chat-bubble-text">{message.content}</p>
+      <div className={`chat-bubble-column ${isUser ? 'is-user' : 'is-assistant'}`}>
+        <div className={`chat-bubble ${isUser ? 'user-bubble' : 'assistant-bubble'}`}>
+          <p className="chat-bubble-text">{message.content}</p>
+        </div>
+
+        {!isUser && message.sources && message.sources.length > 0 && (
+          <div className="chat-bubble-sources">
+            <span className="chat-bubble-sources-label">Sources</span>
+            <div className="chat-bubble-sources-list">
+              {message.sources.map((s, i) => (
+                <span key={i} className="chat-bubble-source-tag">
+                  {[s.author, s.source].filter(Boolean).join(' — ')}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!isUser && message.suggestedChannel && (
+          <button
+            type="button"
+            className="chat-bubble-channel-suggestion"
+            style={{ '--suggestion-bg': `var(--channel-${message.suggestedChannel.colorVariant}-bg)` } as React.CSSProperties}
+            onClick={() => navigate(`/channels/${message.suggestedChannel!.id}`)}
+          >
+            <UserPlus size={14} />
+            <span>Join {message.suggestedChannel.name}</span>
+          </button>
+        )}
       </div>
 
       {isUser && (
