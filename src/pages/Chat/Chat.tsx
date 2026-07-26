@@ -198,8 +198,16 @@ export function Chat() {
                 </div>
               ) : (
                 <>
-                  {messages.map((msg) => (
-                    <ChatBubble key={msg.id} message={msg} />
+                  {messages.map((msg, i) => (
+                    <ChatBubble
+                      key={msg.id}
+                      message={msg}
+                      userQuery={
+                        msg.role === 'assistant' && i > 0 && messages[i - 1].role === 'user'
+                          ? messages[i - 1].content
+                          : undefined
+                      }
+                    />
                   ))}
                   {isSending && (
                     <div className="chat-typing" aria-label="Assistant is typing">

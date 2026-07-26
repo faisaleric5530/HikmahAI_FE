@@ -27,6 +27,7 @@ export function ChannelDetail() {
   const [isJoined, setIsJoined] = useState(() => id ? getJoinedIds().includes(id) : false)
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [pendingQuery, setPendingQuery] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -36,12 +37,48 @@ export function ChannelDetail() {
   }, [id])
 
   useEffect(() => {
+    if (!id) return
+    try {
+      const raw = sessionStorage.getItem('hikmah-channel-prefill')
+      if (!raw) return
+      const prefill = JSON.parse(raw) as { channelId: string; query: string }
+      if (prefill.channelId === id) {
+        setPendingQuery(prefill.query)
+        sessionStorage.removeItem('hikmah-channel-prefill')
+      }
+    } catch {
+      sessionStorage.removeItem('hikmah-channel-prefill')
+    }
+  }, [id])
+
+  useEffect(() => {
     if (isJoined) loadQuestions()
   }, [id, isJoined])
 
   useEffect(() => {
+    if (isJoined && pendingQuery) {
+      autoPostQuery(pendingQuery)
+      setPendingQuery(null)
+    }
+  }, [isJoined, pendingQuery])
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [questions])
+
+  const autoPostQuery = async (query: string) => {
+    setIsSending(true)
+    try {
+      await submitQuestion(query.slice(0, 120), query)
+      toast.success('Your question from AI Chat was posted!')
+    } catch {
+      setInput(query)
+      inputRef.current?.focus()
+      toast.info('Your question is ready — press Enter to post.')
+    } finally {
+      setIsSending(false)
+    }
+  }
 
   const handleJoin = () => {
     const joined = getJoinedIds()

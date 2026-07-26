@@ -5,9 +5,10 @@ import './ChatBubble.scss'
 
 interface ChatBubbleProps {
   message: ChatMessage
+  userQuery?: string
 }
 
-export function ChatBubble({ message }: ChatBubbleProps) {
+export function ChatBubble({ message, userQuery }: ChatBubbleProps) {
   const navigate = useNavigate()
   const isUser = message.role === 'user'
 
@@ -40,7 +41,15 @@ export function ChatBubble({ message }: ChatBubbleProps) {
             type="button"
             className="chat-bubble-channel-suggestion"
             style={{ '--suggestion-bg': `var(--channel-${message.suggestedChannel.colorVariant}-bg)` } as React.CSSProperties}
-            onClick={() => navigate(`/channels/${message.suggestedChannel!.id}`)}
+            onClick={() => {
+              if (userQuery) {
+                sessionStorage.setItem(
+                  'hikmah-channel-prefill',
+                  JSON.stringify({ channelId: message.suggestedChannel!.id, query: userQuery })
+                )
+              }
+              navigate(`/channels/${message.suggestedChannel!.id}`)
+            }}
           >
             <UserPlus size={14} />
             <span>Join {message.suggestedChannel.name}</span>
