@@ -1,6 +1,6 @@
-# HikmahAI — Claude Code Reference
+# HikmahAI Frontend — Claude Code Reference
 
-Islamic knowledge platform: AI chat, Q&A channels, and scholar-authored blogs.
+Islamic knowledge platform: AI chat, Q&A channels, scholar-authored blogs, and direct messaging.
 
 ---
 
@@ -28,54 +28,64 @@ src/
   api/
     axiosInstance.ts      # Module-level Axios instance (token injected via Zustand .getState())
     authApi.ts            # login, fetchCurrentUser, applyForScholar — mock or real HTTP
-    channelsApi.ts        # fetchChannels, fetchQuestions, postQuestion
+    channelsApi.ts        # fetchChannels, fetchQuestions, postQuestion, postReply, markReplyVerified
     blogsApi.ts           # fetchBlogs, fetchBlogById, createBlog, updateBlog, deleteBlog
     chatApi.ts            # sendChatMessage
+    dmApi.ts              # startConversation, listConversations, listMessages, sendDmMessage, markConversationRead
+    userApi.ts            # updatePreferences (hashIdentity)
     mockData.ts           # All mock data (channels, blogs, chat replies)
   services/
     apiService.ts         # useApiService() hook — React-aware HTTP layer (useMemo, token, 401 nav)
   components/
+    AdminGuard.tsx        # Role guard: redirects non-admins to /
     BackButton/           # Shared back-navigation button
     BlogCard/             # Blog card (regular + featured variant)
-    ChatBubble/           # Individual chat message bubble
+    ChatBubble/           # Individual chat message bubble (with channel suggestion + DM button)
     Footer/               # App footer (HikmahLogoIcon + copyright)
-    Header/               # Sticky top nav (logo, nav links, theme toggle, auth actions)
+    Header/               # Sticky top nav (logo, nav links, theme toggle, auth actions, unread badge)
     Icons/
       HikmahLogoIcon.tsx  # SVG logo: mosque dome + crescent + star + open book (teal)
       MosqueIcon.tsx      # SVG mosque silhouette for Channels nav icon
-    QuestionThread/       # Q&A thread with replies
+    QuestionThread/       # Q&A thread with replies, reply form, verify button, Message Scholar button
     Skeletons/            # GridSkeleton, ListSkeleton loading states
   hooks/
     useAuth.ts
     useBlogs.ts
-    useChannels.ts        # useChannels() + useChannelDetail()
+    useChannels.ts        # useChannels() + useChannelDetail() — includes submitReply, verifyReply
     useChat.ts
+    useDm.ts              # useConversations() (30s poll) + useConversationMessages() (10s poll)
     useSessionIntegrity.ts
   i18n/
     en.json               # All UI strings
   pages/
-    Auth/                 # SignIn, SignUp — split-panel auth layout
+    Admin/
+      ScholarApplications/ # Admin review UI — filter tabs, approve/reject modal with reviewer note
+    Auth/                 # SignIn (always redirects to /chat), SignUp — split-panel auth layout
     Blogs/
       BlogList/           # Featured hero card + color-accented grid
       BlogDetail/
       BlogEditor/         # Editorial sticky-topbar card layout
     Channels/
       ChannelsLayout.tsx  # Split-panel parent route (sidebar + <Outlet>)
-      ChannelsLayout.scss
-      ChannelDetail/      # Right-panel: join gate → WhatsApp-style Q&A input
+      ChannelDetail/      # Right-panel: join gate → Q&A input + reply threads
       ChannelList/        # Standalone list page (unused in routing, kept)
       AskQuestion/        # Right-panel question form
-    Chat/                 # AI chat with collapsible history sidebar
+    Chat/                 # AI chat with collapsible history sidebar + channel suggestion chips
     Home/                 # Landing page
-    ScholarApplication/   # Scholar credential submission (hero + steps + form card)
+    Messages/
+      MessagesLayout.tsx  # Split-panel DM layout (sidebar + <Outlet>), polls conversations every 30s
+      MessageDetail/      # Conversation view — message bubbles + input bar, polls every 10s
+    Profile/              # User profile card + Hash My Identity toggle (users) + scholar badge
+    ScholarApplication/   # 3-branch: pending view | rejected view (re-apply) | fresh form
   store/
-    useAuthStore.ts       # AuthUser (id, name, email, role, accessToken?), isAuthenticated, logout
+    useAuthStore.ts       # AuthUser (id, name, email, role, hashIdentity?, accessToken?), isAuthenticated
     useUIStore.ts         # theme: 'light' | 'dark', toggleTheme()
     useChatStore.ts       # sessions[], activeSessionId, newSession/loadSession/deleteSession
     useBlogStore.ts
-    useChannelStore.ts
+    useChannelStore.ts    # channels[], questions[], Reply has authorPublicId
+    useDmStore.ts         # conversations[], totalUnread (derived sum of unreadCount)
   styles/
-    index.scss            # Global utilities, button classes, semantic tokens
+    index.scss            # Global utilities, button classes, semantic tokens (.btn-danger, .badge-red added)
     form.scss             # Form field styles (globally imported)
   App.tsx                 # Root layout + route definitions
   main.tsx
@@ -89,38 +99,45 @@ public/
 ## Routing
 
 ```tsx
-// App.tsx — nested routes
-<Route path="/"                    element={<Home />} />
-<Route path="/sign-in"             element={<SignIn />} />
-<Route path="/sign-up"             element={<SignUp />} />
-<Route path="/chat"                element={<Chat />} />
+// App.tsx — nested routes (all protected by RequireAuth unless noted)
+<Route path="/"                         element={<Home />} />           // public
+<Route path="/sign-in"                  element={<SignIn />} />          // public
+<Route path="/sign-up"                  element={<SignUp />} />          // public
+<Route path="/chat"                     element={<Chat />} />
 
 // Channels: split-panel layout (WhatsApp-style)
-<Route path="/channels"            element={<ChannelsLayout />}>
-  <Route path=":id"                element={<ChannelDetail />} />
-  <Route path=":id/ask"            element={<AskQuestion />} />
+<Route path="/channels"                 element={<ChannelsLayout />}>
+  <Route path=":id"                     element={<ChannelDetail />} />
+  <Route path=":id/ask"                 element={<AskQuestion />} />
 </Route>
 
-<Route path="/blogs"               element={<BlogList />} />
-<Route path="/blogs/new"           element={<BlogEditor />} />
-<Route path="/blogs/:id"           element={<BlogDetail />} />
-<Route path="/scholar-application" element={<ScholarApplication />} />
+// Direct Messages: split-panel layout (mirrors Channels)
+<Route path="/messages"                 element={<MessagesLayout />}>
+  <Route path=":conversationId"         element={<MessageDetail />} />
+</Route>
+
+<Route path="/blogs"                    element={<BlogList />} />
+<Route path="/blogs/new"               element={<BlogEditor />} />
+<Route path="/blogs/:id"               element={<BlogDetail />} />
+<Route path="/profile"                 element={<Profile />} />
+<Route path="/scholar-application"     element={<ScholarApplication />} />
+<Route path="/admin/scholar-applications" element={<AdminGuard><AdminScholarApplications /></AdminGuard>} />
 ```
 
-### Footer visibility — `App.tsx`
-
-Footer is hidden on full-height pages AND auth pages:
+### Footer / full-height logic — `App.tsx`
 
 ```ts
-const isFullHeight = location.pathname === '/chat' || location.pathname.startsWith('/channels')
-const isAuthPage   = location.pathname === '/sign-in' || location.pathname === '/sign-up'
+const isFullHeight =
+  location.pathname === '/chat' ||
+  location.pathname.startsWith('/channels') ||
+  location.pathname.startsWith('/messages')
 
-// in JSX:
-{!isFullHeight && !isAuthPage && <Footer />}
+const isAuthPage = location.pathname === '/sign-in' || location.pathname === '/sign-up'
 ```
 
 - `isFullHeight` routes: no footer, `main` gets `overflow: hidden; minHeight: 0`.
 - `isAuthPage` routes: no footer, auth layout fills viewport with `height: calc(100dvh - 60px)`.
+- After login, always navigates to `/chat` (no "from" redirect).
 
 ---
 
@@ -130,7 +147,7 @@ const isAuthPage   = location.pathname === '/sign-in' || location.pathname === '
 
 All design tokens live in `src/index.css`.
 
-**Light mode** defaults in `:root {}`.  
+**Light mode** defaults in `:root {}`.
 **Dark mode** overrides in `html.dark {}` (class toggled on `document.documentElement`).
 
 Key tokens:
@@ -193,14 +210,7 @@ Theme state lives in `useUIStore`. Toggle button in the header.
 // Reads system preference via prefers-color-scheme on first load
 ```
 
-```tsx
-// App.tsx — applies/removes class on <html>
-useEffect(() => {
-  document.documentElement.classList.toggle('dark', theme === 'dark')
-}, [theme])
-```
-
-Tailwind v4 `@theme {}` compiles to `:root` — overriding with `html.dark {}` is the correct pattern. Do NOT invert Tailwind's own variables directly.
+Tailwind v4 `@theme {}` compiles to `:root` — overriding with `html.dark {}` is the correct pattern.
 
 ---
 
@@ -209,462 +219,219 @@ Tailwind v4 `@theme {}` compiles to `:root` — overriding with `html.dark {}` i
 ### Header (`src/components/Header/Header.tsx`)
 
 - Grid layout: `grid-template-columns: 1fr auto 1fr` — logo left, nav center, actions right.
-- Logo: `HikmahLogoIcon` (30px) + "Hikmah AI" text.
-- Nav (desktop, ≥640px): Chat · Hikmah Channels · Blogs — shown only when authenticated.
-- Channels nav icon: custom `MosqueIcon` SVG.
-- Actions: theme toggle (Sun/Moon), user button (→ scholar application), sign-out, mobile hamburger.
-- Mobile menu: slides down from top, closes on route change / Escape.
+- Nav (desktop ≥640px): Chat · Channels · **Messages** (with red unread badge) · Blogs
+- Messages badge reads `useDmStore(s => s.totalUnread)` — shown as red pill on nav link.
+- `.nav-link-badge` — small red circle, `var(--color-danger)` background.
+- User button always navigates to `/profile`.
+- Admin users see "Applications" link → `/admin/scholar-applications`.
 
-### Footer (`src/components/Footer/Footer.tsx`)
+### AdminGuard (`src/components/AdminGuard.tsx`)
 
-- Simple one-line footer: `HikmahLogoIcon` (26px) + "Hikmah AI" left, copyright text right.
-- Hidden on `/chat`, `/channels/*`, `/sign-in`, and `/sign-up`.
+Wraps admin-only routes. Redirects to `/` if `user.role !== 'admin'`.
 
-### HikmahLogoIcon (`src/components/Icons/HikmahLogoIcon.tsx`)
+### QuestionThread (`src/components/QuestionThread/QuestionThread.tsx`)
 
-SVG inline component. Props: `size` (default 32), `className`.  
-Shapes: teal mosque dome (`#1BA09A`), white crescent moon (evenodd fill), white 4-pointed star, teal open book pages, dark spine (`#0D8077`).  
-Also used as `public/favicon.svg`.
+Props: `question`, `onReply`, `onVerify`.
 
-### MosqueIcon (`src/components/Icons/MosqueIcon.tsx`)
+- Renders question body + meta + all replies.
+- **Reply form** (collapsible, hidden for question authors — `user.id === question.authorPublicId`).
+- **Verify button** — shown to scholars/admins on unverified replies.
+- **Message Scholar button** — shown only when:
+  1. Current user is not a scholar/admin
+  2. Reply author is a scholar
+  3. `user.id === question.authorPublicId` (only the question asker can DM)
+  - Calls `startConversation(reply.authorPublicId)` → navigates to `/messages/:id`
 
-Lucide-style stroke SVG. Props: `size`, `className`. Used in Channels nav link and ChannelsLayout sidebar header.
+### ChatBubble (`src/components/ChatBubble/ChatBubble.tsx`)
 
----
-
-## Auth Pages (`/sign-in`, `/sign-up`)
-
-**Two-column split layout** — left branding panel (hidden <860px) + right scrollable form panel.
-
-### Left branding panel (`.auth-panel`)
-
-Dark green gradient: `linear-gradient(150deg, #0D2B1E → #1B4332 → #2D6A4F → #3D8A68)` — always hardcoded, never inverts with theme.
-
-Layers (z-index order):
-1. `.auth-panel-deco` — dot grid texture (absolute, z:0)
-2. `.auth-panel-glow` — radial gradient glow blobs (absolute, z:0)
-3. `.auth-panel-content` — all readable content (relative, z:1)
-
-Content structure inside `.auth-panel-content`:
-```tsx
-<div className="auth-panel-brand">      // horizontal: logo tile + name/tagline stack
-  <div className="auth-panel-logo">     // 48px glass tile with HikmahLogoIcon
-  <div>
-    <h2 className="auth-panel-name">    // Montserrat 1.25rem 800 white
-    <p className="auth-panel-tagline">  // Inter 0.75rem uppercase letter-spaced white/50
-<div className="auth-panel-headline">
-  <h3 className="auth-panel-headline-text">  // 2rem/800 white
-  <p className="auth-panel-headline-sub">    // Poppins 0.9375rem white/60
-<ul className="auth-panel-features">
-  <li className="auth-panel-feature">
-    <span className="auth-panel-feature-check">  // 20px circle with Check icon
-    feature text
-<blockquote className="auth-panel-quote">   // italic with left accent border
-```
-
-### Right form panel (`.auth-form-panel`)
-
-- `flex: 1; overflow-y: auto` — scrolls internally if card is taller than viewport.
-- Contains `.auth-card` (max-width: 24rem, border-radius: 24px, surface bg + shadow).
-- `.auth-back-home` — HikmahLogoIcon + "Hikmah AI" link, visible only on mobile (<860px).
-
-### Auth layout sizing
-
-```scss
-.auth-layout {
-  height: calc(100dvh - 60px);  // exactly fills viewport minus header
-  overflow: hidden;              // prevents layout overflow
-}
-```
+- Renders user/assistant message bubbles.
+- For assistant messages with `suggestedChannel`: renders channel suggestion button.
+  - Reads `hikmah-joined-channels` from localStorage to determine label:
+    - **Already joined** → `MessageSquare` icon + "Ask in #ChannelName"
+    - **Not joined** → `UserPlus` icon + "Join #ChannelName"
+  - On click: writes `hikmah-channel-prefill` to sessionStorage, then navigates.
 
 ---
 
-## Chat Page (`/chat`)
+## Chat → Channel Prefill Flow
 
-Split layout: collapsible left sidebar + right chat panel.
+When AI recommends a channel, the user's query is carried across navigation via sessionStorage.
 
-**Sidebar (260px):**
-- Header row: `PanelLeft` toggle button (leftmost) + "HISTORY" label + "New Chat" button.
-- Scrollable session list (title + relative date + delete button).
-- Desktop collapse: `width: 0; border-right-color: transparent` (smooth transition).
-- Initial state from `window.matchMedia('(min-width: 860px)').matches`.
+**Key:** `hikmah-channel-prefill`
+**Shape:** `{ channelId: string, query: string }`
 
-**Sidebar toggle behavior:**
-- Toggle button lives in the sidebar header — always visible when sidebar is open.
-- When sidebar is closed, a fixed `.chat-mobile-open-btn` appears at `top: 72px; left: 12px` on ALL screen sizes (not just mobile). This is the only way to reopen the sidebar.
-- `handleNewChat` / `handleLoadSession` only close the sidebar on mobile (checked via `window.matchMedia`).
-
-**Chat main:**
-- Empty state with suggestion chips (4 Islamic topics)
-- `ChatBubble` messages (user right, AI left)
-- Typing indicator (3 animated dots)
-- Auto-growing textarea, Enter to send / Shift+Enter for newline
-
-**Session persistence (`useChatStore`):**
-- Max 20 sessions in `localStorage` key `hikmah-chat-sessions`
-- Auto-title from first user message (≤50 chars)
-- `newSession()` saves current before clearing
-- `loadSession(id)` restores messages from stored session
+Flow:
+1. `ChatBubble` writes to sessionStorage on channel button click
+2. `ChannelDetail` reads on mount (`useEffect([id])`) — verifies `channelId` matches
+3. Already joined → `autoPostQuery()` fires immediately
+4. Not joined → join screen shown; after join, `useEffect([isJoined, pendingQuery])` fires `autoPostQuery()`
+5. `autoPostQuery` calls `submitQuestion` → on failure, pre-fills textarea + focus
 
 ---
 
 ## Channels Section (`/channels/*`)
 
-**WhatsApp Web-style split panel** implemented via React Router nested routes.
+### ChannelDetail
 
-### ChannelsLayout (parent route)
+**Join gate** — join state in `localStorage` key `hikmah-joined-channels` (array of channel UUIDs).
 
-Left sidebar (320px fixed, scrollable):
-- "Hikmah Channels" header + `MosqueIcon` + channel count badge
-- Search input — filters by name or description
-- `ChannelCard` list using `NavLink` (active state highlights selected channel)
+After joining, shows:
+- Questions list (each as `QuestionThread`)
+- Bottom input bar for posting new questions
 
-Right panel (flex: 1):
-- `/channels` → "Select a Channel" empty state
-- `/channels/:id` → `<ChannelDetail />` via `<Outlet />`
-- `/channels/:id/ask` → `<AskQuestion />` via `<Outlet />`
+**Author name fix:** `useChannelDetail.loadQuestions` replaces `authorName` with real name for the current user's own questions/replies (backend may return hashed name for `hash_identity` users).
 
-Mobile (≤859px):
-- At `/channels`: full-screen sidebar, panel hidden
-- At `/channels/:id`: sidebar hidden, full-screen panel + "← All Channels" button
+### Question / Reply data shape
 
-### ChannelCard (`src/components/ChannelCard/ChannelCard.tsx`)
+```ts
+interface Question {
+  id, channelId, title, body, authorName, authorPublicId?, createdAt, isVerifiedAnswer, replies: Reply[]
+}
 
-Uses `NavLink` (not `Link`) — active class `channel-row-active` applied when channel is selected.
-
-Layout (WhatsApp row style):
+interface Reply {
+  id, questionId, body, authorName, authorPublicId?, authorRole: 'user'|'scholar', isVerifiedAnswer, createdAt
+}
 ```
-[52px avatar circle]  [Name (bold, top row)       ]
-                      [Description (gray)  [count●]]
-```
-Count badge is a colored pill, bottom-right — mimics WhatsApp unread count.
-6 color variants: green · blue · amber · purple · orange · teal.
 
-### ChannelDetail (right panel)
-
-**Join gate**: users see a join screen before they can post. Join state is persisted per-channel in `localStorage` key `hikmah-joined-channels`.
-
-- **Not joined**: renders `.channel-join-screen` — `MosqueIcon` icon tile + title + desc + green "Join Channel" button (`UserPlus` icon). On join: saves ID to localStorage, sets `isJoined = true`, shows toast.
-- **Joined**: full panel with:
-  - `.channel-detail-head` — channel name + desc + "Ask Question" button
-  - `.channel-detail-body` — scrollable `questions-list`
-  - `.channel-detail-input-area` — bottom input bar (pill textarea + circular send button)
-
-Input bar matches WhatsApp style: `border-radius: 24px` textarea, circular `border-radius: 50%` send button with gradient background.
-
-### AskQuestion (right panel)
-
-- `ask-panel-back` button → `navigate('/channels/:id')` (returns to detail panel).
-- Formik form: title + body fields with Yup validation.
+`authorPublicId` is the backend `public_id` of the author. Used for:
+- "Message Scholar" gate: `user.id === question.authorPublicId`
+- Self-reply gate: `user.id !== question.authorPublicId`
+- Own name display: `r.authorPublicId === user.id → r.authorName = user.name`
 
 ---
 
-## Blogs Page (`/blogs`)
+## Direct Messages (`/messages/*`)
 
-**Editorial magazine layout** — max-width 80rem.
+Split panel identical in structure to Channels.
 
-First article → **featured hero card** (full width):
-- 6px left green accent bar
-- Large title (1.625rem, 800 weight)
-- 3-line excerpt at 0.9375rem
-- "Featured Article" badge (pill with BookOpen icon)
-- 32px author avatar
+### State
 
-Remaining articles → **color-accented grid** (2→3→4 col):
-- Each card has a 4px top color bar cycling through 6 accent colors
-- `--card-accent` CSS variable set per-card via inline style
+- `useDmStore` — `conversations[]`, `totalUnread` (derived from sum of `unreadCount`)
+- `useConversations()` — polls every 30s, updates store
+- `useConversationMessages(conversationId)` — polls every 10s, auto marks-read on load
+
+### DmConversation shape
 
 ```ts
-// BlogList.tsx
-const [featured, ...rest] = blogs
-// rest[i] gets ACCENT_COLORS[i % ACCENT_COLORS.length]
+{
+  id, otherUserId, otherUserName, otherUserRole: 'user'|'scholar',
+  lastMessage: string|null, lastMessageAt: string, unreadCount: number
+}
 ```
 
-### Blog Detail (`/blogs/:id`)
+### DmMessage shape
 
-- `.blog-article-body` has `overflow-wrap: break-word; word-break: break-word` to prevent horizontal scroll from long unbroken strings.
+```ts
+{ id, conversationId, senderId, body, isRead, createdAt }
+```
 
-### Blog Editor (`/blogs/new`)
+`senderId` is the backend `public_id` — compared against `user.id` to determine bubble alignment.
 
-**Editorial layout** with sticky topbar + centered card:
+### Entry point
 
-- **Topbar** (`position: sticky`): `grid-template-columns: 1fr auto 1fr` — back button left, "New Article" title center, empty right.
-- **Card** (`.blog-editor-card`): surface bg, border, border-radius: 20px.
-  - `.blog-editor-title-input` — large Montserrat 1.375rem borderless input for article title.
-  - Separator line.
-  - `.blog-editor-body-input` — Poppins 0.9375rem tall textarea, min-height: 24rem.
-- **Bottom actions bar**: note text left + Publish button right.
+"Message Scholar" button in `QuestionThread` → `startConversation(reply.authorPublicId)` → navigate to `/messages/:conversationId`.
+
+---
+
+## User Profile (`/profile`)
+
+- Profile card: avatar initial, name, email, role badge.
+- **Hash My Identity toggle** (users only): calls `PATCH /users/me/preferences { hashIdentity }` — when enabled, the user's name appears as `Anon#xxxx` in all channel questions/replies (SHA-1 of their public_id, first 4 hex chars). Masking is applied at read time on the backend so toggling immediately affects all posts.
+- Scholar application CTA (users only) / Verified badge (scholars).
+- Scholar users cannot toggle hash identity — if they had it enabled before approval, it resets on approval.
 
 ---
 
 ## Scholar Application (`/scholar-application`)
 
-**Three-section layout**: back button → hero banner → process steps → form card.
+**3-branch render based on existing application status:**
 
-### Hero banner (`.scholar-hero`)
-
-Dark green gradient matching auth panel (`#0D2B1E → #1B4332 → #2D6A4F`), dot-grid deco overlay, glass icon tile (58px), title + description.
-
-### Process steps (`.scholar-steps`)
-
-Horizontal flex row of 3 steps: **Apply → Review → Verified**.
-
-Each step: circular icon (primary-light bg), step number label, step title, step description. Connector lines between steps via `.scholar-step-connector` (absolute positioned 1px line).
-
-### Form card (`.scholar-form-card`)
-
-Surface bg card with titled header (card title + desc, separated by border-bottom) and the Formik form inside. Form footer: note text left + "Submit Application" button right.
-
-Back button uses `navigate(-1)` (not hardcoded path).
+1. **`ScholarPendingView`** — amber hero, shows submitted date, "Under Review" state.
+2. **`ScholarRejectedView`** — red hero, shows `reviewerNote` in amber blockquote, pre-filled resubmit form.
+3. **`ScholarFormView`** — standard fresh application form.
 
 ---
 
-## Form Styles (`src/styles/form.scss`)
+## Admin (`/admin/scholar-applications`)
 
-Globally imported via `src/styles/index.scss` → `src/index.css`. Applies to all pages.
-
-Key patterns:
-
-```scss
-.form-field {
-  background-color: var(--color-input-bg);   // warm off-white in light, dark green in dark
-  border: 1.5px solid var(--color-border);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);  // subtle depth vs card
-  border-radius: 10px;
-}
-
-.form-field-pass-wrap {
-  position: relative;
-  width: 100%;                               // must be 100% to anchor eye toggle correctly
-  .form-field { padding-right: 2.75rem; }   // make room for toggle
-}
-
-.form-pass-toggle {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-}
-```
-
-Dark mode focus ring uses `rgba(82, 183, 136, 0.15)` (not the light-mode `rgba(45, 106, 79, 0.12)`).
-
-Autofill override trick: `-webkit-box-shadow: 0 0 0 1000px var(--color-input-bg) inset !important` prevents browser yellow autofill background.
+- Filter tabs: All / Pending / Approved / Rejected
+- Application cards with left color border by status
+- Approve button → `PATCH /scholar-applications/:id { status: 'approved' }`
+- Reject → modal with textarea (max 500 chars) → sends `reviewerNote`
 
 ---
 
-## Global SCSS Utilities (`src/styles/index.scss`)
+## Auth Pages
 
-Key reusable classes:
-
-```scss
-.page-head          /* flex row, icon + title + desc */
-.page-head-row      /* space-between row for page head + action button */
-.page-head-icon     /* colored icon in page header */
-.page-head-title    /* Montserrat 1.5rem 700 */
-.page-head-desc     /* Poppins 0.875rem secondary */
-
-.btn-primary        /* inline-flex green button — flex-wrap:nowrap, white-space:nowrap, svg{flex-shrink:0} */
-.btn-primary-sm     /* small green button with icon */
-.btn-secondary      /* outlined secondary button */
-.btn-ghost          /* transparent ghost button */
-.btn-fresh          /* no-style base button reset */
-
-.empty-state        /* centered empty state with icon + title + desc */
-.empty-state-icon
-
-.badge-green / .badge-amber / .badge-blue / .badge-purple   /* role/topic badges */
-
-.card               /* surface card with border, border-radius: 16px, hover shadow */
-.section-divider    /* 1px subtle horizontal rule */
-```
-
-**`.btn-primary` arrow wrapping prevention:**
-```scss
-.btn-primary {
-  display: inline-flex;
-  flex-wrap: nowrap;       // never wrap to second line
-  white-space: nowrap;     // never wrap text content
-  svg { flex-shrink: 0; } // prevent SVG icons from shrinking/wrapping
-}
-```
-
-### Btn-primary hover shadow
-
-Uses `color-mix()` for theme-aware shadow (works in both light and dark modes):
-```scss
-box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary) 40%, transparent);
-```
-
----
-
-## Home Page (`/`)
-
-### Feature cards (`.home-feature-card`)
-
-Title and arrow icon are in a shared flex row — **do not** separate them:
-
-```tsx
-<div className="home-feature-title-row">   // display:flex, align-items:center, justify-content:space-between
-  <h3 className="home-feature-title">{title}</h3>
-  <ArrowRight size={15} className="home-feature-arrow" />
-</div>
-```
-
-### Hero CTA + CTA footer buttons
-
-Both use `.btn-primary` which has `flex-wrap: nowrap` and `svg { flex-shrink: 0 }` to keep text and `ArrowRight` icon on the same row at all viewport sizes.
-
----
-
-## Animations
-
-Defined in `src/styles/index.scss` and component SCSS:
-
-| Name | Usage |
-|---|---|
-| `fadeInUp` | Chat empty state, typing indicator entrance |
-| `typing-bounce` | Chat typing indicator dots |
-| `spin` | Chat send button spinner, blog editor publish spinner |
-| `bounce-cta` | Home page hero CTA button (pauses on hover) |
-
----
-
-## i18n Keys (`src/i18n/en.json`)
-
-Key translations relevant to features built:
-
-```json
-{
-  "nav.chat":       "Hikmah AI Chat",
-  "nav.channels":   "Hikmah Channels",
-  "nav.blogs":      "Blogs",
-  "nav.signIn":     "Sign In",
-  "nav.signUp":     "Sign Up",
-  "chat.title":     "Hikmah AI Chat",
-  "chat.welcome":   "...",
-  "chat.placeholder": "Ask a question...",
-  "channels.title": "Hikmah Channels",
-  "channels.askQuestion": "Ask Question",
-  "channels.noQuestions": "No questions yet",
-  "blogs.title":    "Blogs",
-  "blogs.newPost":  "New Post",
-  "blogs.noBlogs":  "No articles yet"
-}
-```
+**Login always redirects to `/chat`** — `from` redirect is intentionally ignored.
 
 ---
 
 ## API Service Layer
 
-### Architecture overview
+### Architecture
 
-Two complementary layers handle all HTTP:
+| Layer | File | Use for |
+|---|---|---|
+| Module-level | `src/api/axiosInstance.ts` | Domain API files, outside React |
+| React hook | `src/services/apiService.ts` | Components/hooks needing 401 navigation |
 
-| Layer | File | Context | Use for |
-|---|---|---|---|
-| Module-level instance | `src/api/axiosInstance.ts` | Any (non-hook) | Domain API files, one-off calls outside React |
-| React hook | `src/services/apiService.ts` | Hook / component only | Components and custom hooks needing 401 navigation |
+### `USE_MOCK` pattern
 
-### `useApiService` hook (`src/services/apiService.ts`)
-
-Mirrors the CRM's `CustomApiServices()` pattern. Must be called inside a React component or hook.
-
-```ts
-const { getRequest, postRequest, putRequest, patchRequest, deleteRequest } = useApiService()
-```
-
-Internals:
-- **`useMemo`** — Axios instance is re-created only when `user?.accessToken` changes.
-- **Request interceptor** — attaches `Authorization: Bearer <accessToken>` from Zustand auth store.
-- **Response interceptor** — on 401: calls `logout()` then `navigate('/sign-in')`.
-- All methods are **TypeScript generic**: `getRequest<Channel[]>('/channels')` returns `Promise<Channel[]>`.
-
-```ts
-// Full method signatures
-getRequest<T>(endpoint: string, params?: Record<string, unknown>): Promise<T>
-postRequest<T>(endpoint: string, data?: unknown): Promise<T>
-putRequest<T>(endpoint: string, data?: unknown): Promise<T>
-patchRequest<T>(endpoint: string, data?: unknown): Promise<T>
-deleteRequest<T>(endpoint: string): Promise<T>
-```
-
-### `axiosInstance` (`src/api/axiosInstance.ts`)
-
-Module-level singleton. Token is injected via `useAuthStore.getState()` (Zustand's escape hatch — works outside React). On 401, it fires `window.dispatchEvent(new CustomEvent('auth:unauthorized'))` instead of navigating (navigation requires a hook).
-
-### Domain API files (`src/api/`)
-
-Each domain file (`authApi.ts`, `channelsApi.ts`, `blogsApi.ts`, `chatApi.ts`) uses a single flag:
-
+All domain API files have:
 ```ts
 const USE_MOCK = !import.meta.env.VITE_API_BASE_URL
 ```
+Set `VITE_API_BASE_URL` to enable real HTTP — no code changes needed.
 
-- **`VITE_API_BASE_URL` not set** → uses mock data with `setTimeout` delays (development default).
-- **`VITE_API_BASE_URL` set** → makes real HTTP calls via `axiosInstance`. Token is injected automatically.
+### Response unwrapping
 
-No code changes needed to switch between mock and real — just set the env var.
-
-### API endpoints (real mode)
-
-| Domain file | Method | Endpoint |
-|---|---|---|
-| `authApi` | POST | `/auth/login` |
-| `authApi` | GET | `/auth/me` |
-| `authApi` | POST | `/auth/scholar-application` |
-| `channelsApi` | GET | `/channels` |
-| `channelsApi` | GET | `/channels/:id/questions` |
-| `channelsApi` | POST | `/channels/:id/questions` |
-| `blogsApi` | GET | `/blogs` |
-| `blogsApi` | GET | `/blogs/:id` |
-| `blogsApi` | POST | `/blogs` |
-| `blogsApi` | PUT | `/blogs/:id` |
-| `blogsApi` | DELETE | `/blogs/:id` |
-| `chatApi` | POST | `/chat/message` |
-
-### Auth token flow
-
-`AuthUser` in `useAuthStore` carries an optional `accessToken?: string`. When real login is implemented, store the JWT there:
-
+Backend wraps responses as `{ status, message, data }`. API files unwrap:
 ```ts
-setUser({ id, name, email, role, accessToken: jwt })
+return (response.data as any).data ?? response.data
 ```
 
-Both `axiosInstance` and `useApiService` pick it up automatically — no extra wiring needed.
+---
 
-### Environment variables
+## localStorage Keys
 
-```
-VITE_API_BASE_URL=https://your-api.com    # set to enable real HTTP; omit for mock mode
-```
+| Key | Contents |
+|---|---|
+| `hikmah-auth-user` | Serialized `AuthUser` including `accessToken` |
+| `hikmah-theme` | `'light'` \| `'dark'` |
+| `hikmah-chat-sessions` | Array of chat sessions (max 20) |
+| `hikmah-joined-channels` | Array of channel UUIDs the user has joined |
+
+## sessionStorage Keys
+
+| Key | Contents | Lifetime |
+|---|---|---|
+| `hikmah-channel-prefill` | `{ channelId, query }` | Written on channel button click, read + cleared on ChannelDetail mount |
 
 ---
 
 ## Coding Conventions
 
-- **SCSS over Tailwind** for all component-level styles. Tailwind used only for utility classes in JSX and the `@theme` token block.
-- **CSS variables** for all colors — never hardcode hex in component SCSS (exception: brand gradients that must always be green regardless of theme, e.g. auth panel, scholar hero, channel join button).
+- **SCSS over Tailwind** for all component-level styles.
+- **CSS variables** for all colors — never hardcode hex in component SCSS (exception: brand gradients).
 - **BEM-inspired naming**: `.component-element`, `.component-element-modifier`.
-- **No `!important`** except in Tailwind overrides and the autofill hack in form.scss.
-- **No comments** in code unless the WHY is non-obvious.
-- **No max-width** on panel-embedded components — the layout controls width.
+- **No `!important`** except in Tailwind overrides and the autofill hack.
+- **No comments** unless the WHY is non-obvious.
+- **No `max-width`** on panel-embedded components — the layout controls width.
 - Icon-only buttons always have `aria-label`.
-- Form fields always have visible `<label>` — no placeholder-only labels.
-- Password fields always use `.form-field-pass-wrap` (position: relative, width: 100%) wrapping the input and `.form-pass-toggle` (position: absolute) for the eye toggle.
+- Form fields always have visible `<label>`.
 
 ---
 
 ## Do Not
 
-- Do not add `max-width` to components rendered inside `ChannelsLayout`'s right panel — the panel handles its own width.
-- Do not render `<Footer />` on `/chat`, `/channels/*`, `/sign-in`, or `/sign-up` routes — controlled by `isFullHeight` and `isAuthPage` in `App.tsx`.
-- Do not use `height: calc(100dvh - 60px)` in full-height pages like Chat/Channels — use `height: 100%` and let `App.tsx` set `100dvh` on the wrapper. Auth layout is the exception (it uses `calc(100dvh - 60px)` intentionally).
-- Do not use `Link` in `ChannelCard` — it must be `NavLink` for active state highlighting in the sidebar.
-- Do not add dark mode colors by hardcoding hex — add a token pair to `:root {}` and `html.dark {}` in `index.css`.
-- Do not set `background-color: white` or `background-color: var(--color-surface)` on form fields — use `var(--color-input-bg)` so they're visually distinct from card backgrounds.
-- Do not omit `flex-wrap: nowrap` / `svg { flex-shrink: 0 }` from buttons that contain an icon — arrows will wrap to a new line without it.
-- Do not render the ChannelDetail input bar for users who haven't joined — check the `hikmah-joined-channels` localStorage key first.
-- Do not call `useApiService()` outside a React component or hook — use `axiosInstance` directly for module-level API calls.
-- Do not hardcode auth tokens or set `Authorization` headers manually in domain API files — `axiosInstance` injects the token automatically via its request interceptor.
-- Do not add new API endpoints to `axiosInstance.ts` — that file is infrastructure only. All endpoint logic belongs in the domain API files under `src/api/`.
+- Do not add `max-width` to components inside `ChannelsLayout` or `MessagesLayout` right panels.
+- Do not render `<Footer />` on `/chat`, `/channels/*`, `/messages/*`, `/sign-in`, `/sign-up`.
+- Do not use `height: calc(100dvh - 60px)` in full-height pages — use `height: 100%`. Auth layout is the only exception.
+- Do not use `Link` in `ChannelCard` — it must be `NavLink`.
+- Do not hardcode hex colors in SCSS — add token pairs to `:root` and `html.dark`.
+- Do not set `background-color: var(--color-surface)` on form fields — use `var(--color-input-bg)`.
+- Do not call `useApiService()` outside a React component or hook.
+- Do not show "Message Scholar" button to scholars or to users who didn't ask the question.
+- Do not show the reply form for the question's own author (`user.id === question.authorPublicId`).
+- Do not redirect to `location.state.from` after login — always go to `/chat`.
