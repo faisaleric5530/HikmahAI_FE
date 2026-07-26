@@ -1,7 +1,18 @@
 import { useNavigate } from 'react-router-dom'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, MessageSquare } from 'lucide-react'
 import type { ChatMessage } from '@/store/useChatStore'
 import './ChatBubble.scss'
+
+const JOINED_KEY = 'hikmah-joined-channels'
+
+function isChannelJoined(channelId: string): boolean {
+  try {
+    const ids: string[] = JSON.parse(localStorage.getItem(JOINED_KEY) ?? '[]')
+    return ids.includes(channelId)
+  } catch {
+    return false
+  }
+}
 
 interface ChatBubbleProps {
   message: ChatMessage
@@ -36,25 +47,29 @@ export function ChatBubble({ message, userQuery }: ChatBubbleProps) {
           </div>
         )}
 
-        {!isUser && message.suggestedChannel && (
-          <button
-            type="button"
-            className="chat-bubble-channel-suggestion"
-            style={{ '--suggestion-bg': `var(--channel-${message.suggestedChannel.colorVariant}-bg)` } as React.CSSProperties}
-            onClick={() => {
-              if (userQuery) {
-                sessionStorage.setItem(
-                  'hikmah-channel-prefill',
-                  JSON.stringify({ channelId: message.suggestedChannel!.id, query: userQuery })
-                )
-              }
-              navigate(`/channels/${message.suggestedChannel!.id}`)
-            }}
-          >
-            <UserPlus size={14} />
-            <span>Join {message.suggestedChannel.name}</span>
-          </button>
-        )}
+        {!isUser && message.suggestedChannel && (() => {
+          const ch = message.suggestedChannel!
+          const joined = isChannelJoined(ch.id)
+          return (
+            <button
+              type="button"
+              className="chat-bubble-channel-suggestion"
+              style={{ '--suggestion-bg': `var(--channel-${ch.colorVariant}-bg)` } as React.CSSProperties}
+              onClick={() => {
+                if (userQuery) {
+                  sessionStorage.setItem(
+                    'hikmah-channel-prefill',
+                    JSON.stringify({ channelId: ch.id, query: userQuery })
+                  )
+                }
+                navigate(`/channels/${ch.id}`)
+              }}
+            >
+              {joined ? <MessageSquare size={14} /> : <UserPlus size={14} />}
+              <span>{joined ? `Ask in ${ch.name}` : `Join ${ch.name}`}</span>
+            </button>
+          )
+        })()}
       </div>
 
       {isUser && (
