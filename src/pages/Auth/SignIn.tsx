@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { Eye, EyeOff, Check } from 'lucide-react'
@@ -17,9 +17,8 @@ const schema = Yup.object().shape({
 
 export function SignIn() {
   const navigate = useNavigate()
-  const location = useLocation()
   const { setUser } = useAuth()
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/chat'
+  const from = '/chat'
   const [showPassword, setShowPassword] = useState(false)
 
   return (
