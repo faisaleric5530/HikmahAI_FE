@@ -139,48 +139,50 @@ export function QuestionThread({ question, onReply, onVerify }: QuestionThreadPr
         )}
       </div>
 
-      <div className="reply-form-section">
-        <button
-          className="reply-toggle-btn"
-          onClick={() => setShowReplyForm((v) => !v)}
-          aria-expanded={showReplyForm}
-        >
-          {showReplyForm ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          {showReplyForm ? 'Cancel' : 'Add Reply'}
-        </button>
+      {user?.id !== question.authorPublicId && (
+        <div className="reply-form-section">
+          <button
+            className="reply-toggle-btn"
+            onClick={() => setShowReplyForm((v) => !v)}
+            aria-expanded={showReplyForm}
+          >
+            {showReplyForm ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {showReplyForm ? 'Cancel' : 'Add Reply'}
+          </button>
 
-        {showReplyForm && (
-          <form className="reply-form" onSubmit={handleReply}>
-            <textarea
-              className="reply-input"
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Write your reply…"
-              rows={3}
-              disabled={isSending}
-              aria-label="Reply text"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleReply(e as unknown as React.FormEvent)
-                }
-              }}
-            />
-            <div className="reply-form-footer">
-              <span className="reply-form-hint">Enter to send · Shift+Enter for new line</span>
-              <button
-                type="submit"
-                className="reply-send-btn"
-                disabled={!replyText.trim() || isSending}
-                aria-label="Post reply"
-              >
-                {isSending ? <span className="reply-spinner" aria-hidden="true" /> : <Send size={14} />}
-                {isSending ? 'Posting…' : 'Post Reply'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
+          {showReplyForm && (
+            <form className="reply-form" onSubmit={handleReply}>
+              <textarea
+                className="reply-input"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Write your reply…"
+                rows={3}
+                disabled={isSending}
+                aria-label="Reply text"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleReply(e as unknown as React.FormEvent)
+                  }
+                }}
+              />
+              <div className="reply-form-footer">
+                <span className="reply-form-hint">Enter to send · Shift+Enter for new line</span>
+                <button
+                  type="submit"
+                  className="reply-send-btn"
+                  disabled={!replyText.trim() || isSending}
+                  aria-label="Post reply"
+                >
+                  {isSending ? <span className="reply-spinner" aria-hidden="true" /> : <Send size={14} />}
+                  {isSending ? 'Posting…' : 'Post Reply'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   )
 }
