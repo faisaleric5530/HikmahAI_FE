@@ -150,7 +150,7 @@ function ScholarRejectedView({
   onResubmit,
 }: {
   app: ScholarApplication
-  user: { name?: string }
+  user: { name?: string; email?: string }
   onBack: () => void
   onResubmit: () => Promise<void>
 }) {
@@ -197,7 +197,7 @@ function ScholarRejectedView({
         <Formik
           initialValues={{
             fullName: app.fullName || user.name || '',
-            email: '',
+            email: user.email || '',
             qualifications: app.qualifications || '',
             ijazah: app.ijazah || '',
           }}
@@ -245,7 +245,7 @@ function ScholarFormView({
   onBack,
   onSuccess,
 }: {
-  user: { name?: string }
+  user: { name?: string; email?: string }
   onBack: () => void
   onSuccess: () => Promise<void>
 }) {
@@ -294,7 +294,7 @@ function ScholarFormView({
           </p>
         </div>
         <Formik
-          initialValues={{ fullName: user.name || '', email: '', qualifications: '', ijazah: '' }}
+          initialValues={{ fullName: user.name || '', email: user.email || '', qualifications: '', ijazah: '' }}
           validationSchema={schema}
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             try {

@@ -41,12 +41,6 @@ export function BlogList() {
           <p className="empty-state-desc">
             {canPublish ? 'Be the first to publish an article.' : 'Check back soon for new articles.'}
           </p>
-          {canPublish && (
-            <Link to="/blogs/new" className="btn-primary" style={{ marginTop: '1rem' }}>
-              <Plus size={15} />
-              <span>{t('blogs.newPost')}</span>
-            </Link>
-          )}
         </div>
       ) : (
         <>
