@@ -6,7 +6,7 @@ export function useBlogs() {
   const store = useBlogStore()
 
   useEffect(() => {
-    if (store.blogs.length === 0) {
+    if (!store.hasFetched) {
       loadBlogs()
     }
   }, [])
@@ -15,6 +15,7 @@ export function useBlogs() {
     store.setLoading(true)
     const data = await fetchBlogs()
     store.setBlogs(data)
+    store.setHasFetched(true)
     store.setLoading(false)
   }
 

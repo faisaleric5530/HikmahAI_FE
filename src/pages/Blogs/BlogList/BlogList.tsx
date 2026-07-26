@@ -38,7 +38,15 @@ export function BlogList() {
       ) : blogs.length === 0 ? (
         <div className="empty-state">
           <p className="empty-state-title">{t('blogs.noBlogs')}</p>
-          <p className="empty-state-desc">Be the first to publish an article.</p>
+          <p className="empty-state-desc">
+            {canPublish ? 'Be the first to publish an article.' : 'Check back soon for new articles.'}
+          </p>
+          {canPublish && (
+            <Link to="/blogs/new" className="btn-primary" style={{ marginTop: '1rem' }}>
+              <Plus size={15} />
+              <span>{t('blogs.newPost')}</span>
+            </Link>
+          )}
         </div>
       ) : (
         <>
